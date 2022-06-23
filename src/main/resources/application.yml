@@ -1,0 +1,12 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017
+      database: test
+
+springbootwebfluxjjwt:
+  password:
+    encoder:
+      secret: mysecret
+      iteration: 33
+      keylength: 256
