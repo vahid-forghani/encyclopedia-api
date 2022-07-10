@@ -1,5 +1,7 @@
 package com.vahid.encyclopedia.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +34,15 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     Mono<User> save(@RequestBody User user) {
         return userService.save(user);
+    }
+
+    @DeleteMapping("{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    Mono<Void> delete(@PathVariable String id) {
+        return userService.delete(id);
     }
     
 }

@@ -9,6 +9,7 @@ import com.vahid.encyclopedia.service.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ public class AuthController {
     @PostMapping("login")
     public Mono<ResponseEntity<AuthResponse>> login(@RequestBody AuthRequest authRequest) {
         return userService.get(authRequest.getUsername())
-            .filter(userDetails -> authRequest.getPassword().equals(userDetails.getPassword()))
+            .filter(userDetails -> getHash(authRequest.getPassword()).equals(userDetails.getPassword()))
             .map(userDetails -> ResponseEntity.ok(new AuthResponse(jwtUtil.generateToken(userDetails))))
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
     }
@@ -37,6 +38,10 @@ public class AuthController {
     @GetMapping("auth")
     public Mono<Principal> getPrincipal(Mono<Principal> principal) {
         return principal;
+    }
+
+    private String getHash(String password) {
+        return DigestUtils.md5DigestAsHex(password.getBytes());
     }
     
 }
