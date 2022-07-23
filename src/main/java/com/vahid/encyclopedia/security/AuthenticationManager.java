@@ -31,10 +31,10 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             .filter(valid -> valid)
             .switchIfEmpty(Mono.empty())
             .map(valid -> {
-                Claims claims = jwtUtil.getAllClaimsFromToken(authToken);
+                Claims claims = jwtUtil.getClaims(authToken);
                 List<String> roles = claims.get("role", List.class);
                 return new UsernamePasswordAuthenticationToken(
-                    jwtUtil.getUsernameFromToken(authToken),
+                    jwtUtil.getUsername(authToken),
                     null,
                     roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
                 );

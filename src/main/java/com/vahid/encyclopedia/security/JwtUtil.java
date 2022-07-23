@@ -16,38 +16,40 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private String secret = "ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave64ByteLength";
+    private final SecurityConfiguration securityConfiguration;
+    private Key key;
 
-    private long expirationTime = 1 * 60 * 60 * 1000;
+    public JwtUtil(SecurityConfiguration securityConfiguration) {
+        this.securityConfiguration = securityConfiguration;
+        key = Keys.hmacShaKeyFor(securityConfiguration.getJwt().getSecret().getBytes());
+    }
 
-    private Key key = Keys.hmacShaKeyFor(secret.getBytes());
-
-    public Claims getAllClaimsFromToken(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    public String getUsernameFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
+    public String getUsername(String token) {
+        return getClaims(token).getSubject();
     }
 
-    public Date getExpirationDateFromToken(String token) {
-        return getAllClaimsFromToken(token).getExpiration();
+    public Date getExpirationDate(String token) {
+        return getClaims(token).getExpiration();
     }
 
     private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
+        final Date expiration = getExpirationDate(token);
         return expiration.before(new Date());
     }
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRoles());
-        return doGenerateToken(claims, user.getUsername());
+        return generateToken(claims, user.getUsername());
     }
 
-    private String doGenerateToken(Map<String, Object> claims, String username) {
+    private String generateToken(Map<String, Object> claims, String username) {
         final Date createdDate = new Date();
-        final Date expirationDate = new Date(createdDate.getTime() + expirationTime);
+        final Date expirationDate = new Date(createdDate.getTime() + securityConfiguration.getJwt().getExpiration());
 
         return Jwts.builder()
                 .setClaims(claims)
